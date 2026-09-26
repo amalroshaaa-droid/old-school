@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Work+Sans:wght@300;400;500;600;700&family=Caveat:wght@400;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --color-cream: #F2E8D5;
+  --color-cream-light: #FAF5EB;
+  --color-cream-dark: #E8D9BC;
+  --color-brown: #6B3D1E;
+  --color-brown-dark: #2C1A0E;
+  --color-brown-light: #A07040;
+  --color-charcoal: #1C1209;
+  --color-khaki: #3E5232;
+  --color-red: #B5330D;
+  --color-red-light: #D4451A;
+  --font-sans: 'Work Sans', system-ui, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-hand: 'Caveat', cursive;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+  overflow-x: hidden;
+}
+
+/* Film grain overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 300px 300px;
+  opacity: 0.038;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--color-cream); }
+::-webkit-scrollbar-thumb { background: var(--color-brown); border-radius: 2px; }
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Paper texture */
+.paper-texture {
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(107,61,30,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(107,61,30,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 55% 85%, rgba(62,82,50,0.04) 0%, transparent 50%);
+}
+
+/* Steam path animation */
+@keyframes steamRise {
+  0%   { transform: translateY(0)    scaleX(1);    opacity: 0.85; }
+  40%  { transform: translateY(-18px) scaleX(1.3);  opacity: 0.5;  }
+  100% { transform: translateY(-55px) scaleX(0.55); opacity: 0;    }
+}
+
+/* Scroll indicator */
+@keyframes scrollBob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+
+/* Nav */
+.nav-transition { transition: background 0.35s ease, box-shadow 0.35s ease; }
+
+/* Vintage stamp circle */
+.stamp-circle {
+  border: 2px solid rgba(181,51,13,0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Double border card */
+.double-border {
+  border: 1px solid rgba(107,61,30,0.2);
+  position: relative;
+}
+.double-border::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(107,61,30,0.08);
+  pointer-events: none;
+}
+
+/* Admin Dashboard styles */
+:root {
+  --bg: #FAF6F0;
+  --sidebar: #1C1A17;
+  --sidebar-hover: #2E2A24;
+  --sidebar-active: #3D342A;
+  --card: #FFFFFF;
+  --primary: #8B5E3C;
+  --primary-hover: #7A5234;
+  --accent: #5A7A5A;
+  --charcoal: #2C2A26;
+  --muted: #9A8F82;
+  --border: #E8DDD0;
+  --cream-deep: #F0E8DC;
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0;
+}
+
+.sidebar-link {
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+@keyframes pulse-new {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.animate-pulse-new {
+  animation: pulse-new 1.5s ease-in-out infinite;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in-right 0.3s ease-out;
+}
+

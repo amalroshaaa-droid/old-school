@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: #F5F0E8;
+  --foreground: #2C2C2C;
+  --card: #FDFAF4;
+  --card-foreground: #2C2C2C;
+  --primary: #5C3D2E;
+  --primary-foreground: #F5F0E8;
+  --secondary: #E8E0D0;
+  --secondary-foreground: #3D2B1F;
+  --muted: #EDE8DE;
+  --muted-foreground: #7A6A58;
+  --accent: #6B8F71;
+  --accent-foreground: #FFFFFF;
+  --border: #D5CABC;
+  --ring: #5C3D2E;
+  --radius: 8px;
+
+  --tea-brown: #5C3D2E;
+  --tea-brown-dark: #3D2B1F;
+  --tea-brown-light: #8B6650;
+  --cream: #F5F0E8;
+  --cream-dark: #EDE8DE;
+  --charcoal: #2C2C2C;
+  --muted-green: #6B8F71;
+  --muted-green-dark: #4A6B50;
+  --warm-white: #FDFAF4;
+  --amber: #C8832A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Smooth transitions */
+.sidebar-link {
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+/* Status badge pulse for NEW orders */
+@keyframes pulse-new {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.animate-pulse-new {
+  animation: pulse-new 1.5s ease-in-out infinite;
+}
+
+/* Notification slide in */
+@keyframes slide-in-right {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in-right 0.3s ease-out;
+}

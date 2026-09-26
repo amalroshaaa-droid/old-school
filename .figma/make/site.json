@@ -1,0 +1,10 @@
+{
+  "description": "Experience a nostalgic café atmosphere with a premium website that showcases Old School Tea Kovai's rich teas, Kerala snacks, and seamless online ordering.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "description": "Manage orders, menu, sales, customers, and reviews with a full-featured admin dashboard designed for efficient café operations and real-time insights.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
