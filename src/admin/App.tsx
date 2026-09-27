@@ -58,6 +58,48 @@ const getStoredOrders = (): Order[] => {
   return initialOrders;
 };
 
+const getStoredMenuItems = (): MenuItem[] => {
+  if (typeof window === 'undefined') return initialMenuItems;
+  try {
+    const raw = localStorage.getItem('oldschool_menu_items');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (_) {}
+  return initialMenuItems;
+};
+
+const getStoredCustomers = (): Customer[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    // Purge old mock customers
+    if (!localStorage.getItem('oldschool_customers_cleared_v1')) {
+      localStorage.setItem('oldschool_customers_cleared_v1', 'true');
+      localStorage.setItem('oldschool_customers', JSON.stringify([]));
+      return [];
+    }
+    const raw = localStorage.getItem('oldschool_customers');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (_) {}
+  return [];
+};
+
+const getStoredReviews = (): Review[] => {
+  if (typeof window === 'undefined') return initialReviews;
+  try {
+    const raw = localStorage.getItem('oldschool_reviews');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (_) {}
+  return initialReviews;
+};
+
 export default function AdminApp({ onBackToWebsite }: AdminAppProps) {
   const [loggedIn, setLoggedIn] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -66,33 +108,61 @@ export default function AdminApp({ onBackToWebsite }: AdminAppProps) {
 
   const [page, setPage] = useState<Page>('dashboard');
   const [orders, setOrders] = useState<Order[]>(getStoredOrders);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(getStoredMenuItems);
+  const [customers, setCustomers] = useState<Customer[]>(getStoredCustomers);
+  const [reviews, setReviews] = useState<Review[]>(getStoredReviews);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showNewOrderAlert, setShowNewOrderAlert] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Sync orders with localStorage whenever new orders are placed
+  // Sync data with localStorage events across application
   useEffect(() => {
-    const syncOrders = () => {
+    const syncAll = () => {
       try {
-        const raw = localStorage.getItem('oldschool_orders');
-        if (raw) {
-          const parsed = JSON.parse(raw);
+        const rawOrders = localStorage.getItem('oldschool_orders');
+        if (rawOrders) {
+          const parsed = JSON.parse(rawOrders);
           if (Array.isArray(parsed)) {
             setOrders(parsed);
-            setShowNewOrderAlert(true);
+          }
+        }
+        const rawMenu = localStorage.getItem('oldschool_menu_items');
+        if (rawMenu) {
+          const parsed = JSON.parse(rawMenu);
+          if (Array.isArray(parsed)) {
+            setMenuItems(parsed);
+          }
+        }
+        const rawCust = localStorage.getItem('oldschool_customers');
+        if (rawCust) {
+          const parsed = JSON.parse(rawCust);
+          if (Array.isArray(parsed)) {
+            setCustomers(parsed);
+          }
+        }
+        const rawRev = localStorage.getItem('oldschool_reviews');
+        if (rawRev) {
+          const parsed = JSON.parse(rawRev);
+          if (Array.isArray(parsed)) {
+            setReviews(parsed);
           }
         }
       } catch (_) {}
     };
 
-    window.addEventListener('storage', syncOrders);
-    window.addEventListener('oldschool_order_placed', syncOrders);
+    window.addEventListener('storage', syncAll);
+    window.addEventListener('oldschool_order_placed', syncAll);
+    window.addEventListener('oldschool_menu_updated', syncAll);
+    window.addEventListener('oldschool_customer_updated', syncAll);
+    window.addEventListener('oldschool_review_submitted', syncAll);
+
     return () => {
-      window.removeEventListener('storage', syncOrders);
-      window.removeEventListener('oldschool_order_placed', syncOrders);
+      window.removeEventListener('storage', syncAll);
+      window.removeEventListener('oldschool_order_placed', syncAll);
+      window.removeEventListener('oldschool_menu_updated', syncAll);
+      window.removeEventListener('oldschool_customer_updated', syncAll);
+      window.removeEventListener('oldschool_review_submitted', syncAll);
     };
   }, []);
 
@@ -108,13 +178,40 @@ export default function AdminApp({ onBackToWebsite }: AdminAppProps) {
     });
   };
 
+  const handleUpdateMenu = (newItems: MenuItem[]) => {
+    setMenuItems(newItems);
+    try {
+      localStorage.setItem('oldschool_menu_items', JSON.stringify(newItems));
+      window.dispatchEvent(new Event('oldschool_menu_updated'));
+    } catch (_) {}
+  };
+
+  const handleUpdateReviews = (newReviews: Review[]) => {
+    setReviews(newReviews);
+    try {
+      localStorage.setItem('oldschool_reviews', JSON.stringify(newReviews));
+      window.dispatchEvent(new Event('oldschool_review_submitted'));
+    } catch (_) {}
+  };
+
   const handleClearHistory = () => {
-    if (typeof window !== 'undefined' && window.confirm('Clear all order history now? All previous orders will be removed and history will start fresh from this moment.')) {
+    if (typeof window !== 'undefined' && window.confirm('Clear all order history now? All previous orders and sales will be reset to start fresh from this moment.')) {
       setOrders([]);
       try {
         localStorage.setItem('oldschool_orders', JSON.stringify([]));
         localStorage.setItem(HISTORY_CLEARED_KEY, 'true');
         window.dispatchEvent(new Event('oldschool_order_placed'));
+      } catch (_) {}
+    }
+  };
+
+  const handleClearCustomers = () => {
+    if (typeof window !== 'undefined' && window.confirm('Clear all registered customers history? Customer records will start completely fresh from now.')) {
+      setCustomers([]);
+      try {
+        localStorage.setItem('oldschool_customers', JSON.stringify([]));
+        localStorage.setItem('oldschool_customers_cleared_v1', 'true');
+        window.dispatchEvent(new Event('oldschool_customer_updated'));
       } catch (_) {}
     }
   };
@@ -376,10 +473,10 @@ export default function AdminApp({ onBackToWebsite }: AdminAppProps) {
         <main className="flex-1 overflow-y-auto" onClick={() => showNotifications && setShowNotifications(false)}>
           {page === 'dashboard' && <Dashboard orders={orders} onViewOrder={handleViewOrder} onClearHistory={handleClearHistory} onSetHistoryNow={handleSetHistoryNow} />}
           {page === 'orders' && <Orders orders={orders} onViewOrder={handleViewOrder} onClearHistory={handleClearHistory} onSetHistoryNow={handleSetHistoryNow} />}
-          {page === 'menu' && <Menu items={menuItems} onUpdate={setMenuItems} />}
-          {page === 'analytics' && <Analytics />}
-          {page === 'customers' && <Customers customers={initialCustomers} orders={orders} />}
-          {page === 'reviews' && <Reviews reviews={reviews} onUpdate={setReviews} />}
+          {page === 'menu' && <Menu items={menuItems} onUpdate={handleUpdateMenu} />}
+          {page === 'analytics' && <Analytics orders={orders} onClearHistory={handleClearHistory} />}
+          {page === 'customers' && <Customers customers={customers} orders={orders} onClearCustomers={handleClearCustomers} />}
+          {page === 'reviews' && <Reviews reviews={reviews} onUpdate={handleUpdateReviews} />}
           {page === 'settings' && <Settings orders={orders} onClearHistory={handleClearHistory} onSetHistoryNow={handleSetHistoryNow} />}
         </main>
       </div>

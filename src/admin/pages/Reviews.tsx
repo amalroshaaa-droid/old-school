@@ -43,9 +43,35 @@ export default function Reviews({ reviews, onUpdate }: Props) {
 
   return (
     <div className="p-6 space-y-5">
-      <div>
-        <h1 className="font-display text-2xl" style={{ color: '#2C2A26' }}>Reviews</h1>
-        <p className="text-sm mt-1" style={{ color: '#9A8F82' }}>Only approved reviews appear on the public website</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl" style={{ color: '#2C2A26' }}>Customer Reviews</h1>
+          <p className="text-sm mt-1" style={{ color: '#9A8F82' }}>
+            Real customer feedback typed on website · Approve to display on public website
+          </p>
+        </div>
+
+        {reviews.length > 0 && (
+          <button
+            onClick={() => {
+              if (window.confirm('Clear all reviews?')) {
+                onUpdate([]);
+              }
+            }}
+            className="px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all hover:bg-red-50 cursor-pointer flex items-center gap-1.5"
+            style={{ borderColor: '#FCA5A5', color: '#DC2626', background: '#FFFFFF' }}
+          >
+            <span>🗑</span> Clear Reviews
+          </button>
+        )}
+      </div>
+
+      {/* Info Banner */}
+      <div className="p-3.5 rounded-xl border flex items-center gap-2 text-xs" style={{ background: '#FAF6F0', borderColor: '#E8DDD0' }}>
+        <span className="text-base">💬</span>
+        <span style={{ color: '#5C5652' }}>
+          When customers submit reviews on the Café website, they are instantly recorded here with their ratings and comments.
+        </span>
       </div>
 
       <div className="flex gap-2 border-b" style={{ borderColor: '#E8DDD0' }}>
@@ -53,7 +79,7 @@ export default function Reviews({ reviews, onUpdate }: Props) {
           <button
             key={t.value}
             onClick={() => setTab(t.value)}
-            className="px-4 py-2.5 text-sm font-semibold border-b-2 transition-all -mb-px"
+            className="px-4 py-2.5 text-sm font-semibold border-b-2 transition-all -mb-px cursor-pointer"
             style={tab === t.value
               ? { borderColor: '#8B5E3C', color: '#8B5E3C' }
               : { borderColor: 'transparent', color: '#9A8F82' }
@@ -70,15 +96,16 @@ export default function Reviews({ reviews, onUpdate }: Props) {
       <div className="space-y-3">
         {filtered.length === 0 && (
           <div className="rounded-xl border p-12 text-center" style={{ borderColor: '#E8DDD0', background: '#FFFFFF' }}>
-            <p className="text-sm" style={{ color: '#9A8F82' }}>No reviews in this category</p>
+            <p className="text-sm font-semibold" style={{ color: '#2C2A26' }}>No reviews found in this tab</p>
+            <p className="text-xs mt-1" style={{ color: '#9A8F82' }}>Customer reviews submitted on the website will display here.</p>
           </div>
         )}
         {filtered.map(r => (
-          <div key={r.id} className="rounded-xl border shadow-sm p-5" style={{ background: '#FFFFFF', borderColor: '#E8DDD0' }}>
+          <div key={r.id} className="rounded-xl border shadow-sm p-5 hover:shadow-md transition-shadow" style={{ background: '#FFFFFF', borderColor: '#E8DDD0' }}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4 flex-1 min-w-0">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center text-base font-bold font-display flex-shrink-0" style={{ background: '#F0E8DC', color: '#8B5E3C' }}>
-                  {r.customer[0]}
+                  {r.customer ? r.customer[0].toUpperCase() : '★'}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
@@ -86,8 +113,11 @@ export default function Reviews({ reviews, onUpdate }: Props) {
                     <Stars n={r.rating} />
                     <ReviewBadge status={r.status} />
                   </div>
-                  <p className="text-sm mt-2 leading-relaxed" style={{ color: '#5C5652' }}>{r.text}</p>
-                  <p className="text-xs mt-2 font-mono" style={{ color: '#9A8F82' }}>{r.date}</p>
+                  <p className="text-sm mt-2 leading-relaxed" style={{ color: '#5C5652' }}>"{r.text}"</p>
+                  <p className="text-xs mt-2 font-mono flex items-center gap-2" style={{ color: '#9A8F82' }}>
+                    <span>📅 {r.date}</span>
+                    {r.time && <span>⏰ {r.time}</span>}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5 flex-shrink-0">

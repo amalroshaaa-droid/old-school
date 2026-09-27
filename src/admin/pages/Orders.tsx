@@ -107,7 +107,7 @@ export default function Orders({ orders, onViewOrder, onClearHistory, onSetHisto
           <table className="w-full">
             <thead>
               <tr style={{ background: '#FAF6F0' }}>
-                {['ORDER ID', 'CUSTOMER', 'PHONE', 'ORDER TIME', 'ITEMS', 'TOTAL', 'STATUS', 'ACTION'].map(h => (
+                {['ORDER ID', 'CUSTOMER', 'PHONE', 'DATE & TIME', 'ITEMS', 'TOTAL', 'STATUS', 'ACTION'].map(h => (
                   <th key={h} className="text-left text-xs font-semibold tracking-widest px-4 py-3" style={{ color: '#9A8F82' }}>{h}</th>
                 ))}
               </tr>
@@ -122,7 +122,7 @@ export default function Orders({ orders, onViewOrder, onClearHistory, onSetHisto
                       </p>
                       <p className="text-xs">
                         {orders.length === 0
-                          ? 'All past history has been cleared and set to start fresh right now. New customer orders placed through the website will appear here in real-time.'
+                          ? 'All past history has been cleared and set to start fresh right now. New customer orders placed through the website will appear here in real-time with exact date and time.'
                           : 'Try changing your search term or status filter.'}
                       </p>
                       {orders.length === 0 && onSetHistoryNow && (
@@ -143,7 +143,10 @@ export default function Orders({ orders, onViewOrder, onClearHistory, onSetHisto
                   <td className="px-4 py-3 font-mono text-sm font-semibold" style={{ color: '#8B5E3C' }}>{order.id}</td>
                   <td className="px-4 py-3 text-sm font-medium" style={{ color: '#2C2A26' }}>{order.customer}</td>
                   <td className="px-4 py-3 text-sm font-mono" style={{ color: '#9A8F82' }}>{order.phone}</td>
-                  <td className="px-4 py-3 text-sm font-mono" style={{ color: '#9A8F82' }}>{order.time}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <span className="font-semibold text-[#2C2A26] block text-xs">{order.date || 'Today'}</span>
+                    <span className="text-[11px] font-mono text-[#8B5E3C]">{order.time}</span>
+                  </td>
                   <td className="px-4 py-3 text-sm max-w-48" style={{ color: '#2C2A26' }}>
                     {order.items.map(it => `${it.qty}× ${it.name}`).join(', ')}
                   </td>

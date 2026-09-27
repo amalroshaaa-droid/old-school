@@ -1,53 +1,38 @@
 import { useState, useEffect } from 'react'
 import AdminApp from './admin/App'
-import type { Order } from './admin/types'
-import { initialOrders } from './admin/data'
-
-interface MenuItem {
-  id: string
-  name: string
-  desc: string
-  price: number
-  category: string
-  img: string
-}
+import type { Order, MenuItem, Customer, Review } from './admin/types'
+import { initialOrders, initialMenuItems, initialReviews } from './admin/data'
 
 interface CartItem {
   item: MenuItem
   qty: number
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+const getStoredMenuItems = (): MenuItem[] => {
+  if (typeof window === 'undefined') return initialMenuItems
+  try {
+    const raw = localStorage.getItem('oldschool_menu_items')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch (_) {}
+  return initialMenuItems
+}
 
-const MENU_ITEMS: MenuItem[] = [
-  { id: 't1', name: 'Old School Tea', desc: 'Rich, flavorful — brewed the old-school way', price: 15, category: 'Tea', img: 'https://images.unsplash.com/photo-1661499102718-aebb4886a0bc?w=500&h=500&fit=crop&auto=format' },
-  { id: 't2', name: 'Masala Chai', desc: 'Cardamom, ginger & cinnamon in every sip', price: 20, category: 'Tea', img: 'https://images.unsplash.com/photo-1720875733075-fd8494df7908?w=500&h=500&fit=crop&auto=format' },
-  { id: 't3', name: 'Ginger Tea', desc: 'Fresh ginger, brewed strong and honest', price: 20, category: 'Tea', img: 'https://images.unsplash.com/photo-1583836632332-53825ce55a03?w=500&h=500&fit=crop&auto=format' },
-  { id: 't4', name: 'Lemon Tea', desc: 'Light, citrusy, refreshingly simple', price: 18, category: 'Tea', img: 'https://images.unsplash.com/photo-1646294567230-b56cb0cd1f5b?w=500&h=500&fit=crop&auto=format' },
-  { id: 'c1', name: 'Filter Coffee', desc: 'South Indian decoction, the real way', price: 25, category: 'Coffee', img: 'https://images.unsplash.com/photo-1729277133095-bff46b56c29a?w=500&h=500&fit=crop&auto=format' },
-  { id: 'c2', name: 'Black Coffee', desc: 'No nonsense. Just strong, pure coffee', price: 20, category: 'Coffee', img: 'https://images.unsplash.com/photo-1729277133101-54990c9c2ae7?w=500&h=500&fit=crop&auto=format' },
-  { id: 'c3', name: 'Milk Coffee', desc: 'Smooth brew with full cream milk', price: 30, category: 'Coffee', img: 'https://images.unsplash.com/photo-1605513892508-cfd73a5945f8?w=500&h=500&fit=crop&auto=format' },
-  { id: 'cd1', name: 'Lemon Soda', desc: 'Chilled, fizzy and honestly fresh', price: 25, category: 'Cool Drinks', img: 'https://images.unsplash.com/photo-1646294567230-b56cb0cd1f5b?w=500&h=500&fit=crop&auto=format' },
-  { id: 'cd2', name: 'Nannari Sarbath', desc: 'Traditional herb drink, served chilled on ice', price: 30, category: 'Cool Drinks', img: 'https://images.unsplash.com/photo-1583836632332-53825ce55a03?w=500&h=500&fit=crop&auto=format' },
-  { id: 'cd3', name: 'Salted Lassi', desc: 'Thick, cold and genuinely satisfying', price: 35, category: 'Cool Drinks', img: 'https://images.unsplash.com/photo-1661499102718-aebb4886a0bc?w=500&h=500&fit=crop&auto=format' },
-  { id: 'ks1', name: 'Pazham Pori', desc: 'Golden banana fritters — a Kerala classic', price: 15, category: 'Kerala Snacks', img: 'https://images.unsplash.com/photo-1613764816537-a43baeb559c1?w=500&h=500&fit=crop&auto=format' },
-  { id: 'ks2', name: 'Parippu Vada', desc: 'Crispy lentil fritters made for tea time', price: 20, category: 'Kerala Snacks', img: 'https://images.unsplash.com/photo-1596450512748-2dae774fc38a?w=500&h=500&fit=crop&auto=format' },
-  { id: 'ks3', name: 'Samosa', desc: 'Crispy pastry, spiced potato filling inside', price: 15, category: 'Kerala Snacks', img: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&h=500&fit=crop&auto=format' },
-  { id: 'ks4', name: 'Uzhunnu Vada', desc: 'Soft inside, perfectly crispy outside', price: 20, category: 'Kerala Snacks', img: 'https://images.unsplash.com/photo-1605333409672-4f7db57ba3a2?w=500&h=500&fit=crop&auto=format' },
-  { id: 'f1', name: 'Egg Puff', desc: 'Flaky pastry with a spiced egg filling', price: 20, category: 'Food', img: 'https://images.unsplash.com/photo-1621334721541-370a13974de8?w=500&h=500&fit=crop&auto=format' },
-  { id: 'f2', name: 'Veg Puff', desc: 'Buttery pastry stuffed with spiced veggies', price: 15, category: 'Food', img: 'https://images.unsplash.com/photo-1613764816537-a43baeb559c1?w=500&h=500&fit=crop&auto=format' },
-  { id: 'f3', name: 'Bread Omelette', desc: 'Crispy bread with fluffy egg — the local staple', price: 35, category: 'Food', img: 'https://images.unsplash.com/photo-1683533698971-dcc5e19cb0f1?w=500&h=500&fit=crop&auto=format' },
-]
+const getStoredReviews = (): Review[] => {
+  if (typeof window === 'undefined') return initialReviews
+  try {
+    const raw = localStorage.getItem('oldschool_reviews')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch (_) {}
+  return initialReviews
+}
 
-const CATEGORIES = ['Tea', 'Coffee', 'Cool Drinks', 'Kerala Snacks', 'Food']
-
-const TESTIMONIALS = [
-  { name: 'Karthik R.', text: 'The masala chai here hits different — thick, milky, spiced just right. Nothing comes close in Kovai.', stars: 5 },
-  { name: 'Priya M.', text: 'Came for one cup, stayed two hours. The Pazham Pori with ginger tea is genuinely life-changing.', stars: 5 },
-  { name: 'Ajay S.', text: 'Affordable, consistent, genuinely good. Not trying to be fancy — just doing the basics brilliantly.', stars: 4 },
-  { name: 'Divya K.', text: 'Their filter coffee is exactly what South Indian filter coffee should taste like. Strong, milky, perfect.', stars: 5 },
-  { name: 'Ranjith N.', text: 'My go-to evening spot near Ukkadam. Come with your people, order everything, stay till 10:30.', stars: 4 },
-]
+const CATEGORIES = ['All', 'Tea', 'Coffee', 'Cool Drinks', 'Kerala Snacks', 'Food']
 
 const SNACK_CAROUSEL = [
   { name: 'Pazham Pori', label: 'Banana Fritter', img: 'https://images.unsplash.com/photo-1613764816537-a43baeb559c1?w=420&h=540&fit=crop&auto=format' },
@@ -73,25 +58,63 @@ function SteamSvg({ color = 'rgba(255,255,255,0.7)' }: { color?: string }) {
 }
 
 function MenuCardDark({ item, added, onAdd }: { item: MenuItem; added: boolean; onAdd: () => void }) {
+  const stock = item.stock ?? 50
+  const isOutOfStock = stock <= 0 || item.available === false
+  const imgSrc = item.image || (item as any).img || 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&h=500&fit=crop&auto=format'
+  const desc = item.description || (item as any).desc || 'Freshly prepared authentic café special.'
+
   return (
-    <div className="group overflow-hidden border border-white/[0.08] hover:border-white/[0.16] transition-all duration-300">
-      <div className="overflow-hidden bg-charcoal" style={{ height: 185 }}>
-        <img src={item.img} alt={item.name}
-          className="w-full h-full object-cover opacity-75 group-hover:opacity-95 group-hover:scale-105 transition-all duration-500"
-          loading="lazy" />
-      </div>
-      <div className="p-4 bg-white/[0.04]">
-        <h3 className="font-display font-bold text-cream text-base leading-snug mb-1">{item.name}</h3>
-        <p className="text-cream/45 text-xs leading-relaxed mb-4" style={{ minHeight: '2.2rem' }}>{item.desc}</p>
-        <div className="flex items-center justify-between">
-          <span className="font-hand text-red font-bold" style={{ fontSize: '1.25rem' }}>₹{item.price}</span>
-          <button onClick={onAdd}
-            className={`text-xs font-black tracking-widest uppercase px-4 py-2 transition-all active:scale-95 ${
-              added ? 'bg-khaki text-white' : 'bg-red text-white hover:bg-red-light'
-            }`}>
-            {added ? '✓ ADDED' : 'ADD +'}
-          </button>
+    <div className="group overflow-hidden border border-white/[0.08] hover:border-white/[0.16] transition-all duration-300 flex flex-col justify-between">
+      <div>
+        <div className="overflow-hidden bg-charcoal relative" style={{ height: 185 }}>
+          <img
+            src={imgSrc}
+            alt={item.name}
+            className="w-full h-full object-cover opacity-80 group-hover:opacity-95 group-hover:scale-105 transition-all duration-500"
+            loading="lazy"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&h=500&fit=crop&auto=format'
+            }}
+          />
+          {/* Stock Tag on Card */}
+          <div className="absolute top-2 right-2">
+            {isOutOfStock ? (
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-red-600/90 text-white shadow">
+                OUT OF STOCK
+              </span>
+            ) : stock <= 5 ? (
+              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/90 text-white shadow">
+                Only {stock} left!
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm text-cream/80 border border-white/10">
+                {stock} in stock
+              </span>
+            )}
+          </div>
         </div>
+        <div className="p-4 bg-white/[0.04]">
+          <h3 className="font-display font-bold text-cream text-base leading-snug mb-1">{item.name}</h3>
+          <p className="text-cream/45 text-xs leading-relaxed mb-4 line-clamp-2" style={{ minHeight: '2.2rem' }}>
+            {desc}
+          </p>
+        </div>
+      </div>
+      <div className="p-4 pt-0 bg-white/[0.04] flex items-center justify-between">
+        <span className="font-hand text-red font-bold" style={{ fontSize: '1.25rem' }}>₹{item.price}</span>
+        <button
+          onClick={onAdd}
+          disabled={isOutOfStock}
+          className={`text-xs font-black tracking-widest uppercase px-4 py-2 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:bg-gray-700 ${
+            isOutOfStock
+              ? 'bg-gray-700 text-gray-400'
+              : added
+              ? 'bg-khaki text-white'
+              : 'bg-red text-white hover:bg-red-light'
+          }`}
+        >
+          {isOutOfStock ? 'SOLD OUT' : added ? '✓ ADDED' : 'ADD +'}
+        </button>
       </div>
     </div>
   )
@@ -100,12 +123,22 @@ function MenuCardDark({ item, added, onAdd }: { item: MenuItem; added: boolean; 
 // ── Main App ──────────────────────────────────────────────────────────────────
 
 function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
+  const [menuList, setMenuList] = useState<MenuItem[]>(getStoredMenuItems)
+  const [reviews, setReviews] = useState<Review[]>(getStoredReviews)
   const [cart, setCart] = useState<CartItem[]>([])
   const [cartOpen, setCartOpen] = useState(false)
-  const [activeCategory, setActiveCategory] = useState('Tea')
+  const [activeCategory, setActiveCategory] = useState('All')
   const [scrolled, setScrolled] = useState(false)
   const [testimonialIdx, setTestimonialIdx] = useState(0)
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
+
+  // Review modal state
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [revName, setRevName] = useState('')
+  const [revRating, setRevRating] = useState(5)
+  const [revText, setRevText] = useState('')
+  const [reviewSubmitted, setReviewSubmitted] = useState(false)
+  const [reviewError, setReviewError] = useState('')
 
   const cartTotal = cart.reduce((s, c) => s + c.item.price * c.qty, 0)
   const cartCount = cart.reduce((s, c) => s + c.qty, 0)
@@ -120,12 +153,33 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null)
   const [formError, setFormError] = useState('')
 
+  // Sync menu and reviews with localStorage across tabs & Admin updates
+  useEffect(() => {
+    const handleSync = () => {
+      setMenuList(getStoredMenuItems())
+      setReviews(getStoredReviews())
+    }
+    window.addEventListener('storage', handleSync)
+    window.addEventListener('oldschool_menu_updated', handleSync)
+    window.addEventListener('oldschool_review_submitted', handleSync)
+    return () => {
+      window.removeEventListener('storage', handleSync)
+      window.removeEventListener('oldschool_menu_updated', handleSync)
+      window.removeEventListener('oldschool_review_submitted', handleSync)
+    }
+  }, [])
+
   const addToCart = (item: MenuItem) => {
+    const currentStock = item.stock ?? 50
+    if (currentStock <= 0 || item.available === false) return
+
     setCart(prev => {
       const ex = prev.find(c => c.item.id === item.id)
-      return ex
-        ? prev.map(c => c.item.id === item.id ? { ...c, qty: c.qty + 1 } : c)
-        : [...prev, { item, qty: 1 }]
+      if (ex) {
+        if (ex.qty >= currentStock) return prev // cannot exceed inventory stock
+        return prev.map(c => c.item.id === item.id ? { ...c, qty: c.qty + 1 } : c)
+      }
+      return [...prev, { item, qty: 1 }]
     })
     setAddedIds(prev => new Set(prev).add(item.id))
     setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(item.id); return n }), 1300)
@@ -133,7 +187,13 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
 
   const updateQty = (id: string, delta: number) => {
     setCart(prev =>
-      prev.map(c => c.item.id === id ? { ...c, qty: Math.max(0, c.qty + delta) } : c).filter(c => c.qty > 0)
+      prev.map(c => {
+        if (c.item.id !== id) return c
+        const currentStock = c.item.stock ?? 50
+        const nextQty = c.qty + delta
+        if (nextQty > currentStock) return c
+        return { ...c, qty: Math.max(0, nextQty) }
+      }).filter(c => c.qty > 0)
     )
   }
 
@@ -156,7 +216,7 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
     await new Promise(r => setTimeout(r, 1000))
 
     // Read existing orders from shared localStorage
-    let currentOrders: Order[] = initialOrders
+    let currentOrders: Order[] = []
     try {
       const raw = localStorage.getItem('oldschool_orders')
       if (raw !== null) {
@@ -174,26 +234,88 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
     }, 1000)
     const newOrderId = `#${maxNum + 1}`
 
+    const dateFormatted = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    const timeFormatted = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })
+
     const newOrder: Order = {
       id: newOrderId,
       customer: custName.trim() + (tableOrAddress.trim() ? ` (${orderType}: ${tableOrAddress.trim()})` : ` (${orderType})`),
       phone: cleanPhone,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: timeFormatted,
       timestamp: Date.now(),
       items: cart.map(c => ({ name: c.item.name, qty: c.qty, price: c.item.price })),
       total: cartTotal,
       status: 'NEW',
-      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      date: dateFormatted,
       paymentMethod: paymentMethod,
       paymentStatus: paymentMethod === 'Cash at Counter' ? 'CASH' : 'PAID',
     }
 
+    // 1. Save new order
     try {
       const updated = [newOrder, ...currentOrders]
       localStorage.setItem('oldschool_orders', JSON.stringify(updated))
       window.dispatchEvent(new Event('oldschool_order_placed'))
     } catch (err) {
       console.error('Error saving new order to localStorage', err)
+    }
+
+    // 2. Decrease stock quantity for each ordered item
+    try {
+      const currentMenu = getStoredMenuItems()
+      const updatedMenu = currentMenu.map(m => {
+        const match = cart.find(c => c.item.id === m.id || c.item.name === m.name)
+        if (match) {
+          const newStock = Math.max(0, (m.stock ?? 50) - match.qty)
+          return {
+            ...m,
+            stock: newStock,
+            available: newStock > 0,
+          }
+        }
+        return m
+      })
+      localStorage.setItem('oldschool_menu_items', JSON.stringify(updatedMenu))
+      setMenuList(updatedMenu)
+      window.dispatchEvent(new Event('oldschool_menu_updated'))
+    } catch (err) {
+      console.error('Error updating menu stock', err)
+    }
+
+    // 3. Register customer details (name, phone, total spent, order count, date & time)
+    try {
+      let custRecords: Customer[] = []
+      const rawCust = localStorage.getItem('oldschool_customers')
+      if (rawCust) {
+        custRecords = JSON.parse(rawCust)
+        if (!Array.isArray(custRecords)) custRecords = []
+      }
+      const existingIdx = custRecords.findIndex(c => c.phone.replace(/\D/g, '') === cleanPhone)
+      if (existingIdx >= 0) {
+        const ex = custRecords[existingIdx]
+        custRecords[existingIdx] = {
+          ...ex,
+          name: custName.trim() || ex.name,
+          orders: ex.orders + 1,
+          totalSpent: ex.totalSpent + cartTotal,
+          lastOrder: dateFormatted,
+          lastOrderTime: timeFormatted,
+        }
+      } else {
+        custRecords.unshift({
+          id: 'c_' + Date.now(),
+          name: custName.trim(),
+          phone: cleanPhone,
+          orders: 1,
+          totalSpent: cartTotal,
+          lastOrder: dateFormatted,
+          lastOrderTime: timeFormatted,
+        })
+      }
+      localStorage.setItem('oldschool_customers', JSON.stringify(custRecords))
+      window.dispatchEvent(new Event('oldschool_customer_updated'))
+    } catch (err) {
+      console.error('Error registering customer', err)
     }
 
     // Play chime tone
@@ -218,6 +340,48 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
     setCheckoutStep('success')
   }
 
+  // Handle customer review submission
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault()
+    setReviewError('')
+    if (!revName.trim()) {
+      setReviewError('Please enter your name.')
+      return
+    }
+    if (!revText.trim()) {
+      setReviewError('Please write your review feedback.')
+      return
+    }
+
+    const newRev: Review = {
+      id: 'rev_' + Date.now(),
+      customer: revName.trim(),
+      rating: revRating,
+      text: revText.trim(),
+      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }),
+      status: 'APPROVED',
+    }
+
+    try {
+      const currentRevs = getStoredReviews()
+      const updatedRevs = [newRev, ...currentRevs]
+      localStorage.setItem('oldschool_reviews', JSON.stringify(updatedRevs))
+      setReviews(updatedRevs)
+      window.dispatchEvent(new Event('oldschool_review_submitted'))
+      setReviewSubmitted(true)
+      setTimeout(() => {
+        setShowReviewModal(false)
+        setReviewSubmitted(false)
+        setRevName('')
+        setRevText('')
+        setRevRating(5)
+      }, 2000)
+    } catch (err) {
+      console.error('Error saving review', err)
+    }
+  }
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60)
     window.addEventListener('scroll', fn, { passive: true })
@@ -225,13 +389,15 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
   }, [])
 
   useEffect(() => {
-    const t = setInterval(() => setTestimonialIdx(i => (i + 1) % TESTIMONIALS.length), 4800)
+    if (reviews.length === 0) return
+    const t = setInterval(() => setTestimonialIdx(i => (i + 1) % reviews.length), 4800)
     return () => clearInterval(t)
-  }, [])
+  }, [reviews.length])
 
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
-  const filteredMenu = MENU_ITEMS.filter(m => m.category === activeCategory)
+  const availableCategories = ['All', ...Array.from(new Set(menuList.map(m => m.category))).filter(Boolean)]
+  const filteredMenu = activeCategory === 'All' ? menuList : menuList.filter(m => m.category === activeCategory)
 
   return (
     <div className="relative pb-16 md:pb-0">
@@ -424,9 +590,9 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
 
           {/* Category tabs */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar mb-12 pb-1">
-            {CATEGORIES.map(cat => (
+            {availableCategories.map(cat => (
               <button key={cat} onClick={() => setActiveCategory(cat)}
-                className={`whitespace-nowrap px-5 py-2 text-[10px] font-black tracking-[0.22em] uppercase transition-all ${
+                className={`whitespace-nowrap px-5 py-2 text-[10px] font-black tracking-[0.22em] uppercase transition-all cursor-pointer ${
                   activeCategory === cat
                     ? 'bg-red text-white'
                     : 'border border-white/15 text-cream/50 hover:text-cream hover:border-white/35'
@@ -451,7 +617,7 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
           {cartCount > 0 && (
             <div className="mt-10 text-center">
               <button onClick={() => setCartOpen(true)}
-                className="bg-red text-white font-black text-xs tracking-[0.22em] uppercase px-10 py-4 hover:bg-red-light transition-colors inline-flex items-center gap-3">
+                className="bg-red text-white font-black text-xs tracking-[0.22em] uppercase px-10 py-4 hover:bg-red-light transition-colors inline-flex items-center gap-3 cursor-pointer">
                 VIEW ORDER
                 <span className="bg-white text-red text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black">
                   {cartCount}
@@ -479,8 +645,8 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
                 There's something about our tea that keeps people coming back.
                 Maybe it's the brew. Maybe it's the vibe. Probably both.
               </p>
-              <button onClick={() => addToCart(MENU_ITEMS[0])}
-                className="bg-red text-white font-black text-xs tracking-[0.22em] uppercase px-10 py-4 hover:bg-red-light transition-all hover:scale-[1.03] active:scale-[0.97] shadow-lg shadow-red/20">
+              <button onClick={() => addToCart(menuList[0] || initialMenuItems[0])}
+                className="bg-red text-white font-black text-xs tracking-[0.22em] uppercase px-10 py-4 hover:bg-red-light transition-all hover:scale-[1.03] active:scale-[0.97] shadow-lg shadow-red/20 cursor-pointer">
                 ORDER THIS
               </button>
             </div>
@@ -579,50 +745,201 @@ function CafeWebsite({ onGoToAdmin }: { onGoToAdmin: () => void }) {
         </div>
       </section>
 
-      {/* ─────────────────────────────────── TESTIMONIALS */}
-      <section id="reviews" className="py-24 bg-brown-dark">
+      {/* ─────────────────────────────────── TESTIMONIALS & REVIEWS */}
+      <section id="reviews" className="py-24 bg-brown-dark relative">
         <div className="max-w-4xl mx-auto px-6 md:px-10 text-center">
-          <span className="text-cream/30 text-[10px] tracking-[0.35em] uppercase block mb-3">Reviews</span>
+          <span className="text-cream/30 text-[10px] tracking-[0.35em] uppercase block mb-3">Customer Reviews</span>
           <h2 className="font-display font-black text-cream mb-5"
             style={{ fontSize: 'clamp(2rem, 5vw, 46px)' }}>
             PEOPLE WHO GET THE VIBE.
           </h2>
 
-          <div className="flex items-center justify-center gap-1.5 mb-14">
-            <span className="text-amber-400 tracking-wide">★★★★</span>
-            <span className="text-amber-400/40">★</span>
-            <span className="text-cream font-bold ml-1.5">3.9</span>
-            <span className="text-cream/40 text-sm ml-1">/ 5 · 40 Reviews</span>
+          {/* Aggregate Rating */}
+          <div className="flex items-center justify-center gap-1.5 mb-10">
+            <span className="text-amber-400 tracking-wide">★★★★★</span>
+            <span className="text-cream font-bold ml-1.5">
+              {reviews.length > 0
+                ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+                : '5.0'}
+            </span>
+            <span className="text-cream/40 text-sm ml-1">
+              / 5 · {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+            </span>
           </div>
 
-          <div className="relative" style={{ minHeight: 190 }}>
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i}
-                className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700 ${
-                  i === testimonialIdx ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                }`}>
-                <p className="font-display italic text-cream/80 max-w-2xl leading-relaxed mb-7"
-                  style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }}>
-                  "{t.text}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="block w-8 h-px bg-cream/22"></span>
-                  <span className="text-cream/50 text-[10px] tracking-[0.28em] uppercase">{t.name}</span>
-                  <span className="block w-8 h-px bg-cream/22"></span>
+          {/* Testimonial / Review Carousel */}
+          {reviews.length > 0 ? (
+            <div className="relative mb-8" style={{ minHeight: 180 }}>
+              {reviews.map((r, i) => (
+                <div key={r.id || i}
+                  className={`absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-700 ${
+                    i === (testimonialIdx % reviews.length) ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                  }`}>
+                  <div className="flex items-center justify-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span key={star} className={star <= r.rating ? 'text-amber-400 text-sm' : 'text-cream/20 text-sm'}>
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <p className="font-display italic text-cream/80 max-w-2xl leading-relaxed mb-5"
+                    style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.35rem)' }}>
+                    "{r.text}"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="block w-8 h-px bg-cream/22"></span>
+                    <span className="text-cream/70 font-semibold text-xs tracking-[0.25em] uppercase">{r.customer}</span>
+                    {r.date && <span className="text-cream/40 text-[11px] font-mono">· {r.date}</span>}
+                    <span className="block w-8 h-px bg-cream/22"></span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 mb-6">
+              <p className="font-display italic text-cream/70 text-lg mb-2">Be the first to leave a review!</p>
+              <p className="text-cream/40 text-xs">Share your experience with our tea, coffee, and Kerala snacks.</p>
+            </div>
+          )}
 
-          <div className="flex items-center justify-center gap-2 mt-5">
-            {TESTIMONIALS.map((_, i) => (
-              <button key={i} onClick={() => setTestimonialIdx(i)}
-                className={`rounded-full transition-all duration-300 ${
-                  i === testimonialIdx ? 'bg-red w-5 h-2' : 'bg-cream/22 hover:bg-cream/40 w-2 h-2'
-                }`} />
-            ))}
+          {/* Indicator dots */}
+          {reviews.length > 1 && (
+            <div className="flex items-center justify-center gap-2 mb-10">
+              {reviews.slice(0, 8).map((_, i) => (
+                <button key={i} onClick={() => setTestimonialIdx(i)}
+                  className={`rounded-full transition-all duration-300 cursor-pointer ${
+                    i === (testimonialIdx % reviews.length) ? 'bg-red w-5 h-2' : 'bg-cream/22 hover:bg-cream/40 w-2 h-2'
+                  }`} />
+              ))}
+            </div>
+          )}
+
+          {/* Write a Review Button */}
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                setShowReviewModal(true)
+                setReviewError('')
+                setReviewSubmitted(false)
+              }}
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full border border-cream/30 text-cream hover:bg-cream/10 hover:border-cream/60 transition-all font-bold text-xs tracking-[0.2em] uppercase cursor-pointer hover:scale-105 active:scale-95 shadow-lg"
+            >
+              <span>✍️</span>
+              <span>Write a Review</span>
+            </button>
+            <p className="text-[11px] text-cream/40 mt-2.5">
+              Your feedback transmits directly to our café admin desk.
+            </p>
           </div>
         </div>
+
+        {/* ── Customer Review Submission Modal ── */}
+        {showReviewModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
+            <div className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-white/10" style={{ background: '#1C1A17' }}>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+                <div>
+                  <h3 className="font-display font-bold text-lg text-cream">Share Your Review</h3>
+                  <p className="text-xs text-cream/50 mt-0.5">Tell the admin and fellow tea lovers about your visit</p>
+                </div>
+                <button
+                  onClick={() => setShowReviewModal(false)}
+                  className="text-cream/50 hover:text-cream text-lg font-bold cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {reviewSubmitted ? (
+                <div className="p-8 text-center space-y-3">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-2xl flex items-center justify-center mx-auto animate-bounce">
+                    ✓
+                  </div>
+                  <h4 className="font-display font-bold text-xl text-cream">Review Submitted!</h4>
+                  <p className="text-xs text-cream/60 leading-relaxed max-w-xs mx-auto">
+                    Thank you, <span className="text-cream font-semibold">{revName}</span>! Your review has been submitted directly to the Café Admin Desk.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitReview} className="p-6 space-y-4 text-left">
+                  {reviewError && (
+                    <div className="p-3 rounded-lg bg-red-900/30 border border-red-500/50 text-red-300 text-xs">
+                      {reviewError}
+                    </div>
+                  )}
+
+                  {/* Customer Name */}
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-cream/60 block mb-1.5">
+                      Your Name *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Rahul S."
+                      value={revName}
+                      onChange={e => setRevName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-white/5 border border-white/15 text-cream text-sm outline-none focus:border-amber-500 transition-colors"
+                    />
+                  </div>
+
+                  {/* Star Rating Picker */}
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-cream/60 block mb-1.5">
+                      Star Rating *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRevRating(star)}
+                          className="text-2xl transition-transform hover:scale-125 cursor-pointer"
+                          style={{ color: star <= revRating ? '#F59E0B' : 'rgba(255,255,255,0.2)' }}
+                          title={`${star} star${star > 1 ? 's' : ''}`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                      <span className="text-xs font-mono font-bold text-amber-400 ml-2">
+                        {revRating} / 5 Stars
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Review Text */}
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-cream/60 block mb-1.5">
+                      Your Review *
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="How was the tea, snacks, or ambiance? Tell us your favorites..."
+                      value={revText}
+                      onChange={e => setRevText(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-white/5 border border-white/15 text-cream text-sm outline-none focus:border-amber-500 transition-colors resize-none"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowReviewModal(false)}
+                      className="flex-1 py-3 rounded-lg border border-white/15 text-cream/60 hover:text-cream text-xs font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-3 rounded-lg bg-red text-white hover:bg-red-light font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-red/30"
+                    >
+                      Submit Review
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ─────────────────────────────────── GALLERY */}

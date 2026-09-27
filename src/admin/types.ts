@@ -30,6 +30,7 @@ export interface MenuItem {
   image: string;
   available: boolean;
   description: string;
+  stock: number;
 }
 
 export interface Customer {
@@ -48,6 +49,7 @@ export interface Review {
   rating: number;
   text: string;
   date: string;
+  time?: string;
   status: ReviewStatus;
 }
 

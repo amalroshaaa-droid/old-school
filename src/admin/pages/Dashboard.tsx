@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import type { Order } from '../types';
 import { OrderBadge } from '../components/StatusBadge';
-import { hourlySales } from '../data';
+import { computeHourlySales } from '../data';
 
 interface Props {
   orders: Order[];
@@ -33,6 +33,8 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
   const pending = orders.filter(o => ['NEW', 'ACCEPTED', 'PREPARING'].includes(o.status)).length;
   const completed = orders.filter(o => o.status === 'COMPLETED').length;
   const currentDateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const dynamicHourlySales = computeHourlySales(orders);
 
   const stats = [
     { label: "TODAY'S ORDERS", value: todayOrders, icon: '🛍', color: '#8B5E3C', bg: '#FFF8F3' },
@@ -101,12 +103,12 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="font-semibold text-base" style={{ color: '#2C2A26' }}>TODAY'S SALES</h2>
-              <p className="text-xs mt-0.5" style={{ color: '#9A8F82' }}>Revenue over time — {currentDateStr}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#9A8F82' }}>Live revenue computed starting from now — {currentDateStr}</p>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: '#F0E8DC', color: '#8B5E3C' }}>Live</span>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={hourlySales} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={dynamicHourlySales} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#8B5E3C" stopOpacity={0.2} />
@@ -153,13 +155,13 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
               </span>
             )}
           </div>
-          <p className="text-xs" style={{ color: '#9A8F82' }}>Sorted by time · newest first</p>
+          <p className="text-xs" style={{ color: '#9A8F82' }}>Exact Date & Time · Newest first</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr style={{ background: '#FAF6F0' }}>
-                {['ORDER', 'CUSTOMER', 'TIME', 'ITEMS', 'TOTAL', 'STATUS', 'ACTION'].map(h => (
+                {['ORDER ID', 'CUSTOMER', 'DATE & TIME', 'ITEMS', 'TOTAL', 'STATUS', 'ACTION'].map(h => (
                   <th key={h} className="text-left text-xs font-semibold tracking-widest px-4 py-3" style={{ color: '#9A8F82' }}>{h}</th>
                 ))}
               </tr>
@@ -190,7 +192,10 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
                   <tr key={order.id} className="border-t hover:bg-amber-50 transition-colors" style={{ borderColor: '#F0E8DC' }}>
                     <td className="px-4 py-3 font-mono text-sm font-semibold" style={{ color: '#8B5E3C' }}>{order.id}</td>
                     <td className="px-4 py-3 text-sm font-medium" style={{ color: '#2C2A26' }}>{order.customer}</td>
-                    <td className="px-4 py-3 text-sm font-mono" style={{ color: '#9A8F82' }}>{order.time}</td>
+                    <td className="px-4 py-3 text-sm font-mono" style={{ color: '#9A8F82' }}>
+                      <span className="font-semibold text-[#2C2A26] block text-xs">{order.date}</span>
+                      <span className="text-[11px] text-[#8B5E3C]">{order.time}</span>
+                    </td>
                     <td className="px-4 py-3 text-sm max-w-36">
                       <span style={{ color: '#2C2A26' }}>
                         {order.items.map(it => `${it.qty}× ${it.name}`).join(', ')}
@@ -209,7 +214,6 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
                     </td>
                   </tr>
                 ))
-              )}
             </tbody>
           </table>
         </div>
