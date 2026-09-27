@@ -214,6 +214,7 @@ export default function Dashboard({ orders, onViewOrder, onClearHistory, onSetHi
                     </td>
                   </tr>
                 ))
+              )}
             </tbody>
           </table>
         </div>
